@@ -38,8 +38,8 @@ char **tokenize(char *input, char *separator) {
 void init_cmd(struct cmd *command) {
     command->args_size = 8;
     command->argc = 0;
-    command->input = NULL;
-    command->output = NULL;
+    command->input = STDIN;
+    command->output = STDOUT;
     command->args = malloc(command->args_size * sizeof(char *));
     if (!command->args)
         exit(EXIT_FAILURE);
@@ -56,7 +56,7 @@ void add_arg(struct cmd *command, char *arg) {
     command->args[command->argc++] = arg;
 }
 
-struct cmd *parse_input(char *input) {
+struct cmd *parse_input(char *input, int (**pipes)[2]) {
     char **tokens = tokenize(input, " \t\n");
     int cmd_index = 0;
     int commands_size = 36;
@@ -64,15 +64,25 @@ struct cmd *parse_input(char *input) {
     if (!commands)
         exit(EXIT_FAILURE);
 
+    int pipes_size = 5;
+    *pipes = malloc((pipes_size * (sizeof(int[2]))) - 1);
+    if (!*pipes)
+        exit(EXIT_FAILURE);
+
     init_cmd(&commands[cmd_index]);
     for (int i = 0; tokens[i]; i++) {
         if (strcmp(tokens[i], "|") == 0) {
+            commands[cmd_index].output = NEXT_PIPE;
+            cmd_index++;
+            init_cmd(&commands[cmd_index]);
+            commands[cmd_index].input = PREV_PIPE;
+        } else if (strcmp(tokens[i], ";") == 0) {
             cmd_index++;
             init_cmd(&commands[cmd_index]);
         } else if (strcmp(tokens[i], ">") == 0) {
-            commands[cmd_index].output = (int *)tokens[++i];
+            commands[cmd_index].output = FILE_OUT;
         } else if (strcmp(tokens[i], "<") == 0) {
-            commands[cmd_index].input = (int *)tokens[++i];
+            commands[cmd_index].input = FILE_IN;
         } else {
             add_arg(&commands[cmd_index], tokens[i]);
             commands[cmd_index].args[commands[cmd_index].argc] = NULL;

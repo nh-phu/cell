@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # ---> C
 # Prerequisites
 *.d
@@ -54,3 +53,5 @@ Mkfile.old
 dkms.conf
 
 test/
+cell
+test/test_parse
