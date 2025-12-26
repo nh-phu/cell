@@ -1,3 +1,3 @@
 # cell
 
-My C(sh)ell
+My C( sh)ell

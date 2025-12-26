@@ -2,7 +2,7 @@
 
 char *get_input() {
     size_t size = 0;
-    char *input = NULL;
+    char *input;
 
     // Error checking stuff
 
@@ -64,11 +64,6 @@ struct cmd *parse_input(char *input, int (**pipes)[2]) {
     if (!commands)
         exit(EXIT_FAILURE);
 
-    int pipes_size = 5;
-    *pipes = malloc((pipes_size * (sizeof(int[2]))) - 1);
-    if (!*pipes)
-        exit(EXIT_FAILURE);
-
     init_cmd(&commands[cmd_index]);
     for (int i = 0; tokens[i]; i++) {
         if (strcmp(tokens[i], "|") == 0) {
@@ -79,10 +74,30 @@ struct cmd *parse_input(char *input, int (**pipes)[2]) {
         } else if (strcmp(tokens[i], ";") == 0) {
             cmd_index++;
             init_cmd(&commands[cmd_index]);
+        } else if (strcmp(tokens[i], ">>") == 0) {
+            commands[cmd_index].output = APPEND_FILE_OUT;
+            cmd_index++;
+            init_cmd(&commands[cmd_index]);
+            commands[cmd_index].input = PREV_CMD;
+            commands[cmd_index].output = END;
+            add_arg(&commands[cmd_index], tokens[i + 1]);
+            break;
         } else if (strcmp(tokens[i], ">") == 0) {
             commands[cmd_index].output = FILE_OUT;
+            cmd_index++;
+            init_cmd(&commands[cmd_index]);
+            commands[cmd_index].input = PREV_CMD;
+            commands[cmd_index].output = END;
+            add_arg(&commands[cmd_index], tokens[i + 1]);
+            break;
         } else if (strcmp(tokens[i], "<") == 0) {
             commands[cmd_index].input = FILE_IN;
+            cmd_index++;
+            init_cmd(&commands[cmd_index]);
+            commands[cmd_index].output = PREV_CMD;
+            commands[cmd_index].input = END;
+            add_arg(&commands[cmd_index], tokens[i + 1]);
+            break;
         } else {
             add_arg(&commands[cmd_index], tokens[i]);
             commands[cmd_index].args[commands[cmd_index].argc] = NULL;
@@ -95,6 +110,10 @@ struct cmd *parse_input(char *input, int (**pipes)[2]) {
                 exit(EXIT_FAILURE);
         };
     }
+
+    *pipes = malloc(((cmd_index + 1) * (sizeof(int[2]))) - 1);
+    if (!pipes)
+        exit(EXIT_FAILURE);
 
     free(tokens);
     return commands;

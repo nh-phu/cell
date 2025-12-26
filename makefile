@@ -20,4 +20,4 @@ clean:
 	rm -f test/test_parse
 
 run: $(TARGET)
-	./$(TARGET)
+	@./$(TARGET)

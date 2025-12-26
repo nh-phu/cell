@@ -7,12 +7,15 @@ int main() {
     int status = 1;
 
     // run
-    do {
+    while (status) {
         printf(">");
         input = get_input();
+        if (input[0] == '\n') {
+            continue;
+        }
         commands = parse_input(input, &pipes);
         status = command_handler(commands, pipes);
-    } while (status);
+    }
 
     free(input);
     free(commands);
