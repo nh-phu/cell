@@ -2,7 +2,7 @@
 
 char *get_input() {
     size_t size = 0;
-    char *input;
+    char *input = NULL;
 
     // Error checking stuff
 
@@ -40,7 +40,7 @@ void init_cmd(struct cmd *command) {
     command->argc = 0;
     command->input = STDIN;
     command->output = STDOUT;
-    command->args = malloc(command->args_size * sizeof(char *));
+    command->args = calloc(command->args_size, sizeof(char *));
     if (!command->args)
         exit(EXIT_FAILURE);
 }
@@ -60,7 +60,7 @@ struct cmd *parse_input(char *input, int (**pipes)[2]) {
     char **tokens = tokenize(input, " \t\n");
     int cmd_index = 0;
     int commands_size = 36;
-    struct cmd *commands = malloc(commands_size * sizeof(struct cmd));
+    struct cmd *commands = calloc(commands_size, sizeof(struct cmd));
     if (!commands)
         exit(EXIT_FAILURE);
 
@@ -111,7 +111,7 @@ struct cmd *parse_input(char *input, int (**pipes)[2]) {
         };
     }
 
-    *pipes = malloc(((cmd_index + 1) * (sizeof(int[2]))) - 1);
+    *pipes = malloc(((cmd_index + 1) * (sizeof(int[2]))));
     if (!pipes)
         exit(EXIT_FAILURE);
 

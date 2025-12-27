@@ -42,4 +42,6 @@ void add_arg(struct cmd *command, char *arg);
 int command_handler(struct cmd *commands, int (*pipes)[2]);
 void exec_command(struct cmd *commands);
 
+void free_commands(struct cmd *commands);
+
 #endif
