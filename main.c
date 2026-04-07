@@ -1,6 +1,7 @@
 #include "headers.h"
 
-int main() {
+int main()
+{
     char *input;
     struct cmd *commands;
     int (*pipes)[2];
@@ -25,7 +26,8 @@ int main() {
     return 0;
 }
 
-void free_commands(struct cmd *commands) {
+void free_commands(struct cmd *commands)
+{
     if (!commands)
         return;
 

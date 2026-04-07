@@ -1,6 +1,7 @@
 #include "headers.h"
 
-char *get_input() {
+char *get_input()
+{
     size_t size = 0;
     char *input = NULL;
 
@@ -10,7 +11,8 @@ char *get_input() {
     return input;
 }
 
-char **tokenize(char *input, char *separator) {
+char **tokenize(char *input, char *separator)
+{
     int index = 0;
     int size = 64;
     char **tokens = (char **)malloc(size * sizeof(char *));
@@ -35,7 +37,8 @@ char **tokenize(char *input, char *separator) {
     return tokens;
 }
 
-void init_cmd(struct cmd *command) {
+void init_cmd(struct cmd *command)
+{
     command->args_size = 8;
     command->argc = 0;
     command->input = STDIN;
@@ -45,7 +48,8 @@ void init_cmd(struct cmd *command) {
         exit(EXIT_FAILURE);
 }
 
-void add_arg(struct cmd *command, char *arg) {
+void add_arg(struct cmd *command, char *arg)
+{
     if (command->argc >= command->args_size) {
         command->args_size *= 2;
         command->args =
@@ -56,7 +60,8 @@ void add_arg(struct cmd *command, char *arg) {
     command->args[command->argc++] = arg;
 }
 
-struct cmd *parse_input(char *input, int (**pipes)[2]) {
+struct cmd *parse_input(char *input, int (**pipes)[2])
+{
     char **tokens = tokenize(input, " \t\n");
     int cmd_index = 0;
     int commands_size = 36;
@@ -112,7 +117,7 @@ struct cmd *parse_input(char *input, int (**pipes)[2]) {
     }
 
     *pipes = malloc(((cmd_index + 1) * (sizeof(int[2]))));
-    if (!pipes)
+    if (!*pipes)
         exit(EXIT_FAILURE);
 
     free(tokens);

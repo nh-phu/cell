@@ -3,7 +3,8 @@
 
 #define PERMISSIONS 0644
 
-int command_handler(struct cmd *commands, int (*pipes)[2]) {
+int command_handler(struct cmd *commands, int (*pipes)[2])
+{
     int status = 1;
     if (strcmp(commands[0].args[0], "exit") == 0) {
         return 0;
@@ -40,11 +41,9 @@ int command_handler(struct cmd *commands, int (*pipes)[2]) {
 
                     fd = open(source, O_RDONLY, PERMISSIONS);
                     if (fd == -1) {
-                        status = -1;
                         perror("Failed to open input file");
                     } else {
                         if (dup2(fd, 0) == -1) {
-                            status = -1;
                             perror("dup2 failed for output file");
                             exit(EXIT_FAILURE);
                         }
@@ -70,11 +69,9 @@ int command_handler(struct cmd *commands, int (*pipes)[2]) {
 
                     fd = open(dest, O_WRONLY | O_CREAT | O_TRUNC, PERMISSIONS);
                     if (fd == -1) {
-                        status = -1;
                         perror("Failed to open output file");
                     } else {
                         if (dup2(fd, 1) == -1) {
-                            status = -1;
                             perror("dup2 failed for output file");
                             exit(EXIT_FAILURE);
                         }
@@ -91,11 +88,9 @@ int command_handler(struct cmd *commands, int (*pipes)[2]) {
 
                     fd = open(dest, O_WRONLY | O_CREAT | O_APPEND, PERMISSIONS);
                     if (fd == -1) {
-                        status = -1;
                         perror("Failed to open output file");
                     } else {
                         if (dup2(fd, 1) == -1) {
-                            status = -1;
                             perror("dup2 failed for output file");
                             exit(EXIT_FAILURE);
                         }
@@ -115,7 +110,6 @@ int command_handler(struct cmd *commands, int (*pipes)[2]) {
             }
 
             if (execvp(commands[i].args[0], commands[i].args) == -1) {
-                status = -1;
                 perror("execvp failed");
             }
             exit(EXIT_FAILURE);
@@ -135,8 +129,9 @@ int command_handler(struct cmd *commands, int (*pipes)[2]) {
         commands[i].wpid = waitpid(commands[i].pid, &commands[i].wstatus, 0);
         if (!WIFEXITED(commands[i].wstatus) &&
             !WIFSIGNALED(commands[i].wstatus)) {
-            status = -1;
             perror("waitpid failed");
+            status = -1;
+            return status;
         }
     }
     return status;

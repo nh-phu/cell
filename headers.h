@@ -1,12 +1,12 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 typedef enum {
     STDIN,
@@ -23,15 +23,15 @@ typedef enum {
 } io_type;
 
 struct cmd {
-    char **args;
-    int argc;
-    int args_size;
-
     io_type input;
     io_type output;
 
     pid_t pid, wpid;
     int wstatus;
+
+    int argc;
+    int args_size;
+    char **args;
 };
 
 char *get_input();

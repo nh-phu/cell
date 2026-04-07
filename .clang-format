@@ -1,5 +1,4 @@
 ---
-Language:        Cpp
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
 AlignArrayOfStructures: None
@@ -98,8 +97,8 @@ BraceWrapping:
   AfterControlStatement: Never
   AfterEnum:       false
   AfterExternBlock: false
-  AfterFunction:   false
-  AfterNamespace:  false
+  AfterFunction:   true
+  AfterNamespace:  true
   AfterObjCDeclaration: false
   AfterStruct:     false
   AfterUnion:      false
@@ -118,7 +117,7 @@ BreakAfterReturnType: None
 BreakArrays:     true
 BreakBeforeBinaryOperators: None
 BreakBeforeConceptDeclarations: Always
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Custom
 BreakBeforeInlineASMColon: OnlyMultiline
 BreakBeforeTemplateCloser: false
 BreakBeforeTernaryOperators: true
