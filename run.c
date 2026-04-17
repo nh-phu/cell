@@ -6,8 +6,12 @@
 int command_handler(struct cmd *commands, int (*pipes)[2])
 {
     int status = 1;
-    if (strcmp(commands[0].args[0], "exit") == 0) {
-        return 0;
+
+    const struct builtin *b0 = builtin_lookup(commands[0].args[0]);
+    if (b0 && b0->parent_only && commands[0].input != PREV_PIPE &&
+        commands[0].output != NEXT_PIPE) {
+        // Parent-only builtin: must run in the shell process to persist.
+        return b0->fn(&commands[0]) == 0 ? 1 : -1;
     }
 
     for (int i = 0; commands[i].argc > 0; i++) {
@@ -104,6 +108,11 @@ int command_handler(struct cmd *commands, int (*pipes)[2])
 
             close(pipes[i][0]);
             close(pipes[i][1]);
+
+            const struct builtin *b = builtin_lookup(commands[i].args[0]);
+            if (b) {
+                exit(b->fn(&commands[i]) == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+            }
 
             if (commands[i].input == END || commands[i].output == END) {
                 return 0;

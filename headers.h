@@ -34,13 +34,22 @@ struct cmd {
     char **args;
 };
 
+struct builtin {
+    const char *name;
+    int (*fn)(struct cmd *command);
+    int parent_only;
+};
+
 char *get_input();
+void prompt();
 char **tokenize(char *input, char *seperator);
 struct cmd *parse_input(char *input, int (**pipes)[2]);
 void init_cmd(struct cmd *command);
 void add_arg(struct cmd *command, char *arg);
 int command_handler(struct cmd *commands, int (*pipes)[2]);
 void exec_command(struct cmd *commands);
+
+const struct builtin *builtin_lookup(const char *name);
 
 void free_commands(struct cmd *commands);
 
