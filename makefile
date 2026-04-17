@@ -2,7 +2,8 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g
 
 TARGET = cell
-SRCS = main.c input.c run.c
+BUILTIN_SRCS := $(wildcard builtins/*.c)
+SRCS = main.c input.c run.c prompt.c $(BUILTIN_SRCS)
 HEADERS = headers.h
 
 cell: $(SRCS)

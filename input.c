@@ -11,11 +11,11 @@ char *get_input()
     return input;
 }
 
-char **tokenize(char *input, char *separator)
+static char **tokenize(char *input, char *separator)
 {
     int index = 0;
     int size = 64;
-    char **tokens = (char **)malloc(size * sizeof(char *));
+    char **tokens = malloc(size * sizeof(char *));
     if (!tokens)
         exit(EXIT_FAILURE);
 
@@ -37,7 +37,7 @@ char **tokenize(char *input, char *separator)
     return tokens;
 }
 
-void init_cmd(struct cmd *command)
+static void init_cmd(struct cmd *command)
 {
     command->args_size = 8;
     command->argc = 0;
@@ -48,7 +48,7 @@ void init_cmd(struct cmd *command)
         exit(EXIT_FAILURE);
 }
 
-void add_arg(struct cmd *command, char *arg)
+static void add_arg(struct cmd *command, char *arg)
 {
     if (command->argc >= command->args_size) {
         command->args_size *= 2;

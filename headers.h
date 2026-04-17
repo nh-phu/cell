@@ -42,10 +42,10 @@ struct builtin {
 
 char *get_input();
 void prompt();
-char **tokenize(char *input, char *seperator);
+static char **tokenize(char *input, char *seperator);
+static void init_cmd(struct cmd *command);
+static void add_arg(struct cmd *command, char *arg);
 struct cmd *parse_input(char *input, int (**pipes)[2]);
-void init_cmd(struct cmd *command);
-void add_arg(struct cmd *command, char *arg);
 int command_handler(struct cmd *commands, int (*pipes)[2]);
 void exec_command(struct cmd *commands);
 

@@ -9,7 +9,7 @@ int main()
 
     // run
     while (status) {
-        printf(">");
+        prompt();
         input = get_input();
         if (input[0] == '\n') {
             free(input);
