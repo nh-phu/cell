@@ -4,7 +4,6 @@ int main()
 {
     char *input;
     struct cmd *commands;
-    int (*pipes)[2];
     int status = 1;
 
     // run
@@ -15,12 +14,11 @@ int main()
             free(input);
             continue;
         }
-        commands = parse_input(input, &pipes);
-        status = command_handler(commands, pipes);
+        commands = parse_input(input);
+        status = command_handler(commands);
 
         free(input);
         free_commands(commands);
-        free(pipes);
     }
 
     return 0;

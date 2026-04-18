@@ -41,8 +41,10 @@ static void init_cmd(struct cmd *command)
 {
     command->args_size = 8;
     command->argc = 0;
-    command->input = STDIN;
-    command->output = STDOUT;
+    command->in_path = NULL;
+    command->out_path = NULL;
+    command->out_append = 0;
+    command->pipe_to_next = 0;
     command->args = calloc(command->args_size, sizeof(char *));
     if (!command->args)
         exit(EXIT_FAILURE);
@@ -60,7 +62,7 @@ static void add_arg(struct cmd *command, char *arg)
     command->args[command->argc++] = arg;
 }
 
-struct cmd *parse_input(char *input, int (**pipes)[2])
+struct cmd *parse_input(char *input)
 {
     char **tokens = tokenize(input, " \t\n");
     int cmd_index = 0;
@@ -72,37 +74,37 @@ struct cmd *parse_input(char *input, int (**pipes)[2])
     init_cmd(&commands[cmd_index]);
     for (int i = 0; tokens[i]; i++) {
         if (strcmp(tokens[i], "|") == 0) {
-            commands[cmd_index].output = NEXT_PIPE;
+            commands[cmd_index].pipe_to_next = 1;
             cmd_index++;
             init_cmd(&commands[cmd_index]);
-            commands[cmd_index].input = PREV_PIPE;
         } else if (strcmp(tokens[i], ";") == 0) {
-            cmd_index++;
-            init_cmd(&commands[cmd_index]);
-        } else if (strcmp(tokens[i], ">>") == 0) {
-            commands[cmd_index].output = APPEND_FILE_OUT;
-            cmd_index++;
-            init_cmd(&commands[cmd_index]);
-            commands[cmd_index].input = PREV_CMD;
-            commands[cmd_index].output = END;
-            add_arg(&commands[cmd_index], tokens[i + 1]);
+            // TODO: support multiple commands separated by ';'
+            fprintf(stderr, "';' not supported yet\n");
             break;
-        } else if (strcmp(tokens[i], ">") == 0) {
-            commands[cmd_index].output = FILE_OUT;
-            cmd_index++;
-            init_cmd(&commands[cmd_index]);
-            commands[cmd_index].input = PREV_CMD;
-            commands[cmd_index].output = END;
-            add_arg(&commands[cmd_index], tokens[i + 1]);
-            break;
+        } else if (strcmp(tokens[i], ">>") == 0 ||
+                   strcmp(tokens[i], ">") == 0) {
+            if (commands[cmd_index].out_path) {
+                fprintf(stderr, "multiple output redirections not supported\n");
+                break;
+            }
+            if (!tokens[i + 1]) {
+                fprintf(stderr, "missing output file\n");
+                break;
+            }
+            commands[cmd_index].out_path = tokens[i + 1];
+            commands[cmd_index].out_append = (strcmp(tokens[i], ">>") == 0);
+            i++;
         } else if (strcmp(tokens[i], "<") == 0) {
-            commands[cmd_index].input = FILE_IN;
-            cmd_index++;
-            init_cmd(&commands[cmd_index]);
-            commands[cmd_index].output = PREV_CMD;
-            commands[cmd_index].input = END;
-            add_arg(&commands[cmd_index], tokens[i + 1]);
-            break;
+            if (commands[cmd_index].in_path) {
+                fprintf(stderr, "multiple input redirections not supported\n");
+                break;
+            }
+            if (!tokens[i + 1]) {
+                fprintf(stderr, "missing input file\n");
+                break;
+            }
+            commands[cmd_index].in_path = tokens[i + 1];
+            i++;
         } else {
             add_arg(&commands[cmd_index], tokens[i]);
             commands[cmd_index].args[commands[cmd_index].argc] = NULL;
@@ -115,10 +117,6 @@ struct cmd *parse_input(char *input, int (**pipes)[2])
                 exit(EXIT_FAILURE);
         };
     }
-
-    *pipes = malloc(((cmd_index + 1) * (sizeof(int[2]))));
-    if (!*pipes)
-        exit(EXIT_FAILURE);
 
     free(tokens);
     return commands;

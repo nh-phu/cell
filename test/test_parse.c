@@ -1,7 +1,8 @@
 #include "../headers.h"
 
 // Debug function to print parsed commands
-void print_commands(struct cmd *commands) {
+void print_commands(struct cmd *commands)
+{
     int cmd_idx = 0;
     while (commands[cmd_idx].argc > 0) {
         printf("Command %d:\n", cmd_idx);
@@ -11,38 +12,45 @@ void print_commands(struct cmd *commands) {
             printf("[%s] ", commands[cmd_idx].args[i]);
         }
         printf("\n");
-        printf("  input: %d\n", commands[cmd_idx].input);
-        printf("  output: %d\n", commands[cmd_idx].output);
+        printf("  in_path: %s\n", commands[cmd_idx].in_path
+                                      ? commands[cmd_idx].in_path
+                                      : "(none)");
+        printf("  out_path: %s\n", commands[cmd_idx].out_path
+                                       ? commands[cmd_idx].out_path
+                                       : "(none)");
+        printf("  out_append: %d\n", commands[cmd_idx].out_append);
+        printf("  pipe_to_next: %d\n", commands[cmd_idx].pipe_to_next);
         printf("\n");
         cmd_idx++;
     }
     printf("Total commands: %d\n", cmd_idx);
 }
 
-void test_case(char *description, char *input_str) {
+void test_case(char *description, char *input_str)
+{
     printf("=== %s ===\n", description);
     printf("Input: \"%s\"\n", input_str);
-    int (*pipes)[2];
 
     char *input = strdup(input_str);
-    struct cmd *commands = parse_input(input, &pipes);
+    struct cmd *commands = parse_input(input);
     print_commands(commands);
 
     // Free memory
     free(input);
-    // TODO: properly free commands array
+    free_commands(commands);
 
     printf("\n");
 }
 
-int main() {
+int main()
+{
     char *input;
-    int (*pipes)[2];
 
     input = get_input();
-    struct cmd *commands = parse_input(input, &pipes);
+    struct cmd *commands = parse_input(input);
     print_commands(commands);
 
     // Free memory
     free(input);
+    free_commands(commands);
 }

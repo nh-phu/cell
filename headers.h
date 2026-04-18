@@ -8,23 +8,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-typedef enum {
-    STDIN,
-    FILE_IN,
-    PREV_PIPE,
-
-    STDOUT,
-    FILE_OUT,
-    APPEND_FILE_OUT,
-    NEXT_PIPE,
-
-    PREV_CMD,
-    END
-} io_type;
-
 struct cmd {
-    io_type input;
-    io_type output;
+    char *in_path;
+    char *out_path;
+    int out_append;
+
+    // Pipeline control
+    int pipe_to_next;
 
     pid_t pid, wpid;
     int wstatus;
@@ -42,12 +32,8 @@ struct builtin {
 
 char *get_input();
 void prompt();
-static char **tokenize(char *input, char *seperator);
-static void init_cmd(struct cmd *command);
-static void add_arg(struct cmd *command, char *arg);
-struct cmd *parse_input(char *input, int (**pipes)[2]);
-int command_handler(struct cmd *commands, int (*pipes)[2]);
-void exec_command(struct cmd *commands);
+struct cmd *parse_input(char *input);
+int command_handler(struct cmd *commands);
 
 const struct builtin *builtin_lookup(const char *name);
 
