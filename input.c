@@ -74,13 +74,22 @@ struct cmd *parse_input(char *input)
     init_cmd(&commands[cmd_index]);
     for (int i = 0; tokens[i]; i++) {
         if (strcmp(tokens[i], "|") == 0) {
+            if (commands[cmd_index].argc == 0) {
+                fprintf(stderr, "syntax error near unexpected token '|'\n");
+                break;
+            }
             commands[cmd_index].pipe_to_next = 1;
             cmd_index++;
             init_cmd(&commands[cmd_index]);
         } else if (strcmp(tokens[i], ";") == 0) {
-            // TODO: support multiple commands separated by ';'
-            fprintf(stderr, "';' not supported yet\n");
-            break;
+            if (commands[cmd_index].argc == 0) {
+                fprintf(stderr, "syntax error near unexpected token ';'\n");
+                break;
+            }
+            // End current pipeline; start a new command.
+            commands[cmd_index].pipe_to_next = 0;
+            cmd_index++;
+            init_cmd(&commands[cmd_index]);
         } else if (strcmp(tokens[i], ">>") == 0 ||
                    strcmp(tokens[i], ">") == 0) {
             if (commands[cmd_index].out_path) {

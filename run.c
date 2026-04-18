@@ -21,9 +21,8 @@ static int open_out(const char *path, int append)
     return fd;
 }
 
-int command_handler(struct cmd *commands)
+static int run_pipeline(struct cmd *commands)
 {
-    // For now we only run the first pipeline on the line.
     int n = 0;
     while (commands[n].argc > 0) {
         n++;
@@ -62,7 +61,7 @@ int command_handler(struct cmd *commands)
     int pipes[n > 1 ? n - 1 : 1][2];
 
     for (int i = 0; i < n; i++) {
-        if (pipe(pipes[i]) == -1) {
+        if (i < n - 1 && pipe(pipes[i]) == -1) {
             perror("pipe failed bro lmao, try again");
             return -1;
         }
@@ -109,8 +108,10 @@ int command_handler(struct cmd *commands)
                 }
             }
 
-            close(pipes[i][0]);
-            close(pipes[i][1]);
+            if (i < n - 1) {
+                close(pipes[i][0]);
+                close(pipes[i][1]);
+            }
 
             const struct builtin *b = builtin_lookup(commands[i].args[0]);
             if (b) {
@@ -120,16 +121,17 @@ int command_handler(struct cmd *commands)
             execvp(commands[i].args[0], commands[i].args);
             perror("execvp");
             exit(EXIT_FAILURE);
+        } else {
+            // Parent: close fds.
+            if (i > 0 && commands[i - 1].pipe_to_next) {
+                close(pipes[i - 1][0]);
+            }
+            if (!commands[i].pipe_to_next && i < n - 1) {
+                close(pipes[i][0]);
+            }
+            if (i < n - 1)
+                close(pipes[i][1]);
         }
-
-        // Parent: close fds.
-        if (i > 0 && commands[i - 1].pipe_to_next) {
-            close(pipes[i - 1][0]);
-        }
-        if (!commands[i].pipe_to_next) {
-            close(pipes[i][0]);
-        }
-        close(pipes[i][1]);
     }
 
     int status = 1;
@@ -138,6 +140,28 @@ int command_handler(struct cmd *commands)
         if (commands[i].wpid == -1) {
             perror("waitpid");
             status = -1;
+        }
+    }
+
+    return status;
+}
+
+int command_handler(struct cmd *commands)
+{
+    int status = 1;
+    int start = 0;
+
+    while (commands[start].argc > 0) {
+        status = run_pipeline(&commands[start]);
+        if (status == 0)
+            return 0;
+
+        while (commands[start].argc > 0) {
+            if (!commands[start].pipe_to_next) {
+                start++;
+                break;
+            }
+            start++;
         }
     }
 
