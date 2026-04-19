@@ -1,5 +1,39 @@
 #include "../headers.h"
 
+#include "../lexer.h"
+
+static void print_tokens(struct token *t)
+{
+    for (int i = 0; t && t[i].type != TOK_END; i++) {
+        switch (t[i].type) {
+        case TOK_WORD:
+            printf("TOK_WORD(%s)\n", t[i].text);
+            break;
+        case TOK_PIPE:
+            puts("TOK_PIPE");
+            break;
+        case TOK_SEMI:
+            puts("TOK_SEMI");
+            break;
+        case TOK_IN:
+            puts("TOK_IN");
+            break;
+        case TOK_OUT:
+            puts("TOK_OUT");
+            break;
+        case TOK_OUT_APP:
+            puts("TOK_OUT_APP");
+            break;
+        case TOK_ERROR:
+            puts("TOK_ERROR");
+            return;
+        default:
+            puts("TOK_?");
+            break;
+        }
+    }
+}
+
 // Debug function to print parsed commands
 void print_commands(struct cmd *commands)
 {
@@ -32,6 +66,9 @@ void test_case(char *description, char *input_str)
     printf("Input: \"%s\"\n", input_str);
 
     char *input = strdup(input_str);
+    struct token *t = lex(input);
+    print_tokens(t);
+    free_tokens(t);
     struct cmd *commands = parse_input(input);
     print_commands(commands);
 
@@ -44,13 +81,29 @@ void test_case(char *description, char *input_str)
 
 int main()
 {
-    char *input;
+    // Read and parse lines until EOF.
+    while (1) {
+        char *input = get_input();
+        if (!input)
+            break;
 
-    input = get_input();
-    struct cmd *commands = parse_input(input);
-    print_commands(commands);
+        printf("--- INPUT: %s", input);
 
-    // Free memory
-    free(input);
-    free_commands(commands);
+        // Print tokens using a copy, since lex() mutates the buffer.
+        char *copy = strdup(input);
+        struct token *t = lex(copy);
+        print_tokens(t);
+        free_tokens(t);
+        free(copy);
+
+        struct cmd *commands = parse_input(input);
+        if (commands) {
+            print_commands(commands);
+            free_commands(commands);
+        }
+
+        free(input);
+    }
+
+    return 0;
 }
